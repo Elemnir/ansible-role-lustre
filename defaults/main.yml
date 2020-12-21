@@ -25,18 +25,18 @@ lustre_server_targets: []
 # - label: testfs-MDT0000
 #   mkfs_opts: --mgs --mdt --index 0 # Options to provide for initializing the target
 #   path: /dev/sdb                   # Path to the device
-#   local: mds1@tcp1                 # NID of the primary host for the target
-#   foreign: mds2@tcp1               # Optional. Defaults to none
+#   local: mds1                      # NID of the primary host for the target
+#   foreign: mds2                    # Optional. Defaults to none
 #   backfs: ldiskfs                  # Optional. Can be "zfs" or "ldiskfs". Defaults to "ldiskfs"
 
 
-lustre_run_client: True
+lustre_run_client: False
 
 lustre_client_repo_url: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.5/el7.8.2003/client/"
 lustre_client_repo_gpgurl: ""
 
 lustre_client_mounts: []
-# - path: /lustre/testfs
+# - name: /lustre/testfs
 #   src: mds1@tcp1:/testfs
 #   opts: noatime   # Optional
 #   state: mounted  # Optional
