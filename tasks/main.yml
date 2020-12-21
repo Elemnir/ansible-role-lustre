@@ -1,0 +1,138 @@
+---
+
+# Automated Lustre client RPM builds
+- when: '"build-lustre-client" in ansible_run_tags'
+  tags: ['never', 'build-lustre-client']
+  become: True
+  block:
+  
+  - name: Install packages for the build
+    package:
+      name: "{{ item }}"
+      state: installed
+    with_items: "{{ lustre_build_dependencies }}"
+
+  - name: Download the source tarball
+    get_url:
+      url: "{{ lustre_build_download_url }}"
+      dest: "/var/tmp/{{ lustre_build_download_url|basename }}"
+
+  - name: Build the rpms
+    shell: >
+      rpmbuild --rebuild --without lustre-tests --without servers
+      /var/tmp/{{ lustre_build_download_url|basename }}
+
+
+# Install and configure Lustre on the servers
+- when: lustre_run_server
+  become: True
+  block:
+
+  - name: Configure the e2fsprogs repository
+    yum_repository:
+      name: lustre-e2fsprogs
+      description: "e2fsprogs Package Repository"
+      file: lustre
+      baseurl: "{{ lustre_e2fsprogs_repo_url }}"
+      gpgkey: "{{ lustre_e2fsprogs_repo_gpgurl }}"
+      gpgcheck: "{{ lustre_e2fsprogs_repo_gpgurl != '' }}"
+
+  - name: Configure the Lustre server repository
+    yum_repository:
+      name: lustre-server
+      description: "Lustre Server Package Repository"
+      file: lustre
+      baseurl: "{{ lustre_server_repo_url }}"
+      gpgkey: "{{ lustre_server_repo_gpgurl }}"
+      gpgcheck: "{{ lustre_server_repo_gpgurl != '' }}"
+
+  - name: Install Lustre from the repos
+    yum:
+      name: lustre
+      state: installed
+
+  - name: Configure the ldev.conf
+    template:
+      src:  ldev.conf.j2
+      dest: /etc/ldev.conf
+      mode: 755
+
+
+# Install Lustre on clients
+- when: lustre_run_client
+  become: True
+  block:
+
+  - name: Configure the Lustre client repository
+    yum_repository:
+      name: lustre-client
+      description: "Lustre Client Package Repository"
+      file: lustre
+      baseurl: "{{ lustre_client_repo_url }}"
+      gpgkey: "{{ lustre_client_repo_gpgurl }}"
+      gpgcheck: "{{ lustre_client_repo_gpgurl != '' }}"
+
+  - name: Install the Lustre client package
+    yum:
+      name: lustre-client
+      state: installed
+
+
+# Only execute the mkfs.lustre commands when explicitly directed
+- when: '"execute-lustre-mkfs" in ansible_run_tags'
+  tags: ['never', 'execute-lustre-mkfs']
+  become: True
+  block:
+ 
+  - name: Confirm that formatting the disks is desired.
+    pause:
+      prompt: "Press Enter to reformat the Lustre storage targets."
+
+  - name: Run the mkfs.lustre commands
+    shell:
+      cmd: >
+        mkfs.lustre --reformat --fsname={{ lustre_fsname }} {{ item.mkfs_opts }}
+        --backfstype={{ item.backfs|default('ldiskfs') }} {{ item.path }}
+    with_items: "{{ lustre_server_targets }}"
+    when: "item.local == inventory_hostname"
+
+
+# Set up the LNET service
+- become: True
+  block:
+  
+  - name: Render the lnet.conf and lnet_routes.conf files
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: 755
+    loop:
+      - { src: "lnet.conf.j2", dest: "/etc/lnet.conf" }
+      - { src: "lnet_routes.conf.j2", dest: "/etc/lnet_routes.conf" }
+
+  - name: Start and enable the lnet service
+    service:
+      name: lnet.service
+      state: started
+      enabled: True
+
+
+# Create the client mounts
+- when: run_lustre_client
+  become: True
+  block:
+
+  - name: Create the Lustre paths
+    file: 
+      path: "{{ item.name }}"
+      state: directory
+    loop: "{{ lustre_client_mounts }}"
+
+  - name: Mount Lustre
+    mount:
+      name: "{{ item.name }}"
+      src: "{{ item.src }}"
+      opts: "{{ item.opts|default(omit) }}"
+      fstype: lustre
+      state: "{{ item.state|default('mounted') }}"
+    loop: "{{ lustre_client_mounts }}"

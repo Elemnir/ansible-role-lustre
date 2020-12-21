@@ -1,0 +1,42 @@
+---
+
+lustre_build_dependencies: [
+    "@Development Tools", "kernel-devel", "rpm-build", "make", "libtool", 
+    "zlib-devel", "libselinux-devel", "openssl-devel", "elfutils-libelf-devel", 
+    "libyaml-devel"
+]
+
+lustre_build_download_url: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.5/el7/client/SRPMS/lustre-2.12.5-1.src.rpm"
+
+lustre_lnet_nets:
+  - name: tcp1
+    interface: eth0
+
+lustre_run_server: False
+
+lustre_server_repo_url: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.5/el7.8.2003/patchless-ldiskfs-server/"
+lustre_server_repo_gpgurl: ""
+
+lustre_e2fsprogs_repo_url: "https://downloads.whamcloud.com/public/e2fsprogs/1.45.6.wc3/el7/"
+lustre_e2fsprogs_repo_gpgurl: ""
+
+lustre_fsname: testfs
+lustre_server_targets: []
+# - label: testfs-MDT0000
+#   mkfs_opts: --mgs --mdt --index 0 # Options to provide for initializing the target
+#   path: /dev/sdb                   # Path to the device
+#   local: mds1@tcp1                 # NID of the primary host for the target
+#   foreign: mds2@tcp1               # Optional. Defaults to none
+#   backfs: ldiskfs                  # Optional. Can be "zfs" or "ldiskfs". Defaults to "ldiskfs"
+
+
+lustre_run_client: True
+
+lustre_client_repo_url: "https://downloads.whamcloud.com/public/lustre/lustre-2.12.5/el7.8.2003/client/"
+lustre_client_repo_gpgurl: ""
+
+lustre_client_mounts: []
+# - path: /lustre/testfs
+#   src: mds1@tcp1:/testfs
+#   opts: noatime   # Optional
+#   state: mounted  # Optional

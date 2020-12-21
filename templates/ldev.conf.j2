@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+#
+#local  foreign/-  label       [md|zfs:]device-path   [journal-path]/- [raidtab]
+#
+{% for target in lustre_server_targets %}
+{{ target.local }}	{{ target.foreign|default('-') }}	{{ target.label }}	{% if "backfs" in target and target.backfs == "zfs" %}zfs:{% endif -%}{{ target.path }}
+{% endfor %}
