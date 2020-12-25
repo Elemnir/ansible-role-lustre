@@ -118,7 +118,7 @@
 
 
 # Create the client mounts
-- when: run_lustre_client
+- when: lustre_run_client
   become: True
   block:
 
