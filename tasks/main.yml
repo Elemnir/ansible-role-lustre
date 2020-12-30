@@ -35,7 +35,7 @@
       file: lustre
       baseurl: "{{ lustre_e2fsprogs_repo_url }}"
       gpgkey: "{{ lustre_e2fsprogs_repo_gpgurl }}"
-      gpgcheck: "{{ lustre_e2fsprogs_repo_gpgurl != '' }}"
+      gpgcheck: "{{ lustre_e2fsprogs_repo_gpgurl|length > 0 }}"
 
   - name: Configure the Lustre server repository
     yum_repository:
@@ -44,7 +44,7 @@
       file: lustre
       baseurl: "{{ lustre_server_repo_url }}"
       gpgkey: "{{ lustre_server_repo_gpgurl }}"
-      gpgcheck: "{{ lustre_server_repo_gpgurl != '' }}"
+      gpgcheck: "{{ lustre_server_repo_gpgurl|length > 0 }}"
 
   - name: Install Lustre from the repos
     yum:
@@ -55,7 +55,7 @@
     template:
       src:  ldev.conf.j2
       dest: /etc/ldev.conf
-      mode: 755
+      mode: "755"
 
 
 # Install Lustre on clients
@@ -70,7 +70,7 @@
       file: lustre
       baseurl: "{{ lustre_client_repo_url }}"
       gpgkey: "{{ lustre_client_repo_gpgurl }}"
-      gpgcheck: "{{ lustre_client_repo_gpgurl != '' }}"
+      gpgcheck: "{{ lustre_client_repo_gpgurl|length > 0 }}"
 
   - name: Install the Lustre client package
     yum:
@@ -105,7 +105,7 @@
     template:
       src: "{{ item.src }}"
       dest: "{{ item.dest }}"
-      mode: 755
+      mode: "755"
     loop:
       - { src: "lnet.conf.j2", dest: "/etc/lnet.conf" }
       - { src: "lnet_routes.conf.j2", dest: "/etc/lnet_routes.conf" }
