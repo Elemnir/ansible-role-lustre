@@ -1,0 +1,18 @@
+---
+dependencies: []
+
+galaxy_info:
+  role_name: lustre
+  author: Adam Howard
+  description: Installs and configures the servers or clients of a Lustre Filesystem.
+  license: "license (BSD)"
+  min_ansible_version: 2.4
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+  galaxy_tags:
+    - storage
+    - clustering
+    - system
